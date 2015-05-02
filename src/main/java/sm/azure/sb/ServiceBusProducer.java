@@ -33,7 +33,7 @@ public class ServiceBusProducer {
      */
     public static void main(String... args) throws Exception {
 
-        logger.info("Starting redis-update ...");
+        logger.info("Starting service-bus-producer ...");
         logger.info("Reading properties ...");
 
         final HealthCheckRegistry healthChecks = new HealthCheckRegistry();
@@ -50,24 +50,11 @@ public class ServiceBusProducer {
 
         ServletContainer servletContainer = new ServletContainer();
         ServletHolder servletHolder = new ServletHolder(servletContainer);
-        servletHolder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "zanox.tracking.rest.api");
+        servletHolder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "sm.azure.sb.rest");
         servletHolder.setInitParameter("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
 
         context.addServlet(servletHolder, "/*");
         server.start();
 
-        // -------------- This server is for delivering the status.txt and healthchecks ----------------------
-        Server adminServer = new Server(80);
-        ServletContextHandler contextAdmin = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        adminServer.setHandler(contextAdmin);
-//        context.addServlet(new ServletHolder(new HealthCheckServlet(healthChecks)), Constants.HEALTH_CHECK_URL);
-
-        ServletContainer servletContainerAdmin = new ServletContainer();
-        ServletHolder servletHolderAdmin = new ServletHolder(servletContainerAdmin);
-        servletHolderAdmin.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "zanox.tracking.rest.management");
-        servletHolderAdmin.setInitParameter("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
-
-        contextAdmin.addServlet(servletHolderAdmin, "/*");
-        adminServer.start();
     }
 }
