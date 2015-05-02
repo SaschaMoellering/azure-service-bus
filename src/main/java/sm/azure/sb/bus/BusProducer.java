@@ -2,6 +2,7 @@ package sm.azure.sb.bus;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import sm.azure.sb.Constants;
 
 import javax.jms.*;
 import javax.naming.Context;
@@ -18,6 +19,7 @@ public class BusProducer {
     private Connection connection;
     private MessageProducer sender;
     private Session sendSession;
+    private InitialContext context;
     private static Random randomGenerator = new Random();
     private static Logger logger = LogManager.getLogger(BusProducer.class);
 
@@ -25,6 +27,10 @@ public class BusProducer {
 
     private BusProducer() {
         try {
+            Hashtable<String, String> env = new Hashtable<>();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, Constants.CONTEXT_FACTORY);
+            env.put(Context.PROVIDER_URL, Constants.PROVIDER_URL);
+            context = new InitialContext(env);
             this.createConnection();
         }
 
@@ -38,10 +44,6 @@ public class BusProducer {
     }
 
     protected void createConnection() throws NamingException, JMSException{
-        Hashtable<String, String> env = new Hashtable<>();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.apache.qpid.amqp_1_0.jms.jndi.PropertiesFileInitialContextFactory");
-        env.put(Context.PROVIDER_URL, "file:///tmp/servicebus.properties");
-        InitialContext context = new InitialContext(env);
 
         // Lookup ConnectionFactory and Queue
         ConnectionFactory cf = (ConnectionFactory) context.lookup("SBCF");
@@ -49,13 +51,24 @@ public class BusProducer {
 
         // Create Connection
         connection = cf.createConnection();
+
+        connection.setExceptionListener(exception -> {
+            logger.error("ExceptionListener triggered: " + exception.getMessage(), exception);
+            try {
+                Thread.sleep(5000); // Wait 5 seconds (JMS server restarted?)
+                createConnection();
+            } catch (InterruptedException | NamingException | JMSException e) {
+                logger.error("Error pausing thread" + e.getMessage());
+            }
+        });
+
         sendSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         sender = sendSession.createProducer(queue);
     }
 
-    public void sendMessage() throws JMSException {
+    public void sendMessage(final Integer value) throws JMSException {
         TextMessage message = sendSession.createTextMessage();
-        message.setText("Test AMQP message from JMS");
+        message.setText("Test AMQP message from JMS with value " + value);
         long randomMessageID = randomGenerator.nextLong() >>>1;
         message.setJMSMessageID("ID:" + randomMessageID);
         sender.send(message);

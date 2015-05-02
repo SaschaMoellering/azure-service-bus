@@ -5,9 +5,7 @@ import org.apache.logging.log4j.Logger;
 import sm.azure.sb.Constants;
 import sm.azure.sb.bus.BusProducer;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -18,13 +16,13 @@ import javax.ws.rs.core.Response;
 public class RestApi {
     private static Logger logger = LogManager.getLogger(RestApi.class);
 
-    @GET
-    @Path("/data")
+    @POST
+    @Path("/messages/{value}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response putData() {
+    public Response sendMessage(@PathParam("value") Integer value) {
         try {
             BusProducer producer = BusProducer.getInstance();
-            producer.sendMessage();
+            producer.sendMessage(value);
 
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
