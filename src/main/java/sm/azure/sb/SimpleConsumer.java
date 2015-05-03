@@ -64,6 +64,8 @@ public class SimpleConsumer implements MessageListener {
     public void onMessage(Message message) {
         try {
             logger.info("Received message with JMSMessageID = " + message.getJMSMessageID());
+            TextMessage textMsg = (TextMessage)message;
+            logger.info("Payload: " + textMsg.getText());
             message.acknowledge();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

@@ -50,6 +50,7 @@ public class BusProducer {
         Destination queue = (Destination) context.lookup("QUEUE");
 
         // Create Connection
+        logger.info("Trying to connect to " + queue.toString());
         connection = cf.createConnection();
 
         connection.setExceptionListener(exception -> {
@@ -66,13 +67,13 @@ public class BusProducer {
         sender = sendSession.createProducer(queue);
     }
 
-    public void sendMessage(final Integer value) throws JMSException {
+    public void sendMessage(final String payload) throws JMSException {
         TextMessage message = sendSession.createTextMessage();
-        message.setText("Test AMQP message from JMS with value " + value);
+        message.setText(payload);
         long randomMessageID = randomGenerator.nextLong() >>>1;
         message.setJMSMessageID("ID:" + randomMessageID);
         sender.send(message);
-        logger.debug("Sent message with JMSMessageID = " + message.getJMSMessageID());
+        logger.info("Sent message with JMSMessageID = " + message.getJMSMessageID());
     }
 
     public void close() {

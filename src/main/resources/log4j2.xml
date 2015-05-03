@@ -17,11 +17,8 @@
 
     </Appenders>
     <Loggers>
-        <Logger name="sm.azure" level="info" additivity="false">
-            <appender-ref ref="file-log" level="info"/>
-        </Logger>
-        <Root level="debug" additivity="false">
-            <Appender-ref ref="Console" level="info"/>
-        </Root>
+        <root level="info">
+            <appender-ref ref="Console" level="info"/>
+        </root>
     </Loggers>
 </Configuration>

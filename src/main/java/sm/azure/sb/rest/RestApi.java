@@ -17,12 +17,13 @@ public class RestApi {
     private static Logger logger = LogManager.getLogger(RestApi.class);
 
     @POST
-    @Path("/messages/{value}")
+    @Path("/messages/{payload}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response sendMessage(@PathParam("value") Integer value) {
+    public Response sendMessage(@PathParam("payload") String payload) {
         try {
+            logger.info("In sendMessage");
             BusProducer producer = BusProducer.getInstance();
-            producer.sendMessage(value);
+            producer.sendMessage(payload);
 
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
